@@ -1,0 +1,44 @@
+import { useEffect, useState, useCallback } from "react";
+import { Film } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import VideoUploader from "@/components/VideoUploader";
+import VideoList from "@/components/VideoList";
+
+const Index = () => {
+  const [videos, setVideos] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchVideos = useCallback(async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from("videos")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setVideos(data || []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchVideos();
+  }, [fetchVideos]);
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container mx-auto flex items-center gap-3 px-4 py-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "var(--gradient-primary)" }}>
+            <Film className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <h1 className="text-xl font-bold text-foreground tracking-tight">Physics Vault</h1>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8 space-y-8 max-w-5xl">
+        <VideoUploader onUploadComplete={fetchVideos} />
+        <VideoList videos={videos} loading={loading} onDelete={fetchVideos} />
+      </main>
+    </div>
+  );
+};
+
+export default Index;
